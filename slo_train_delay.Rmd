@@ -9,7 +9,61 @@ output:
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
-
-
+library(leaflet)
+library(sp)
+library(igraph)
 ```
+
+## Data import
+```{r}
+delays <- read_csv(unzip("train_delay.zip", "delays.csv"))
+rail_edge <- read_csv(unzip("train_delay.zip", "rail_edgelist.csv"), col_names = FALSE)
+rail_node <- read_csv(unzip("train_delay.zip", "rail_nodes.csv"))
+
+rail_node$id <- as.character(rail_node$id)
+rail_edge$X1 <- as.character(rail_edge$X1)
+rail_edge$X2 <- as.character(rail_edge$X2)
+
+rail_edge$X1[nchar(rail_edge$X1)==4] <- rail_edge$X1[nchar(rail_edge$X1)==4] %>% paste0("0",.)
+rail_edge$X2[nchar(rail_edge$X2)==4] <- rail_edge$X2[nchar(rail_edge$X2)==4] %>% paste0("0",.)
+```
+
+## Network visualization
+
+```{r}
+g <- graph.data.frame(rail_edge, directed=FALSE, vertices=rail_node)
+gg <- as_data_frame(g, "both")
+vert <- gg$vertices
+coordinates(vert) <- ~lng+lat
+
+edges <- gg$edges
+
+edges <- lapply(1:nrow(edges), function(i) {
+  as(rbind(vert[vert$name == edges[i, "from"], ], 
+           vert[vert$name == edges[i, "to"], ]), 
+     "SpatialLines")
+})
+
+for (i in seq_along(edges)) {
+  edges[[i]] <- spChFIDs(edges[[i]], as.character(i))
+}
+
+edges <- do.call(rbind, edges)
+
+leaflet(vert) %>% addTiles() %>% 
+  addCircleMarkers(
+    data = vert,
+    radius = 2,
+    color = "blue", 
+    fill = TRUE, 
+    fillOpacity = 1, 
+    opacity = 1) %>%
+  addPolylines(
+    data = edges, 
+    color = "red",
+    weight = 2)
+```
+
+
+
 

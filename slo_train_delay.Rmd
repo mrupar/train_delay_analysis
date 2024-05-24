@@ -54,17 +54,24 @@ all(missing_dates == all_missing_days) # TRUE
 Data is obtained at time intervals from `r date(min(delays$timestamp))` to `r date(max(delays$timestamp))`. 
 There is a 57 day gap in data in interval `r date(min(all_missing_days$day))` to `r date(max(all_missing_days$day))`, most likely due to corona virus pandemic.
 ```{r}
-train_delay_per_day <- delays %>% 
-  group_by(date=date(timestamp), train = train_no) %>% 
-  summarise(n_train_delays = n(), .groups = 'drop')
+# number of delays per day
+n_delays_per_day <- delays %>% 
+  group_by(day) %>% 
+  summarise(n_delays = n())
 
-train_delay_per_day <- train_delay_per_day %>%
-  group_by(date) %>% summarise(delays = sum(n_train_delays)) %>%
-  inner_join(train_delay_per_day) %>%
-  mutate(perc = n_train_delays/delays)
+# number of trains on each day
+n_trains_per_day <- delays %>% 
+  group_by(day) %>% 
+  distinct(train_no) %>% 
+  summarise(n_trains = n())
+
+# average number of delays for each day
+avg_delay_per_day <- n_delays_per_day %>%
+  inner_join(n_trains_per_day) %>%
+  mutate(avg_delays_per_train = n_delays/n_trains)
 ```
 
-In this time there were on average `r mean(delays_per_day$n)` .
+In this time there were on average .
 
 ```{r}
 delays %>% group_by(date=month(timestamp)) %>% summarise(n()) %>% plot()

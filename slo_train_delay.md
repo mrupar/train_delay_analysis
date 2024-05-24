@@ -47,11 +47,26 @@ is a 57 day gap in data in interval 2020-03-16 to 2020-05-11, most
 likely due to corona virus pandemic.
 
 ``` r
-delays_per_day <- delays %>% group_by(date=date(timestamp)) %>% summarise(n=n())
+# number of delays per day
+n_delays_per_day <- delays %>% 
+  group_by(day) %>% 
+  summarise(n_delays = n())
+
+# number of trains on each day
+n_trains_per_day <- delays %>% 
+  group_by(day) %>% 
+  distinct(train_no) %>% 
+  summarise(n_trains = n())
+
+# average number of delays for each day
+avg_delay_per_day <- n_delays_per_day %>%
+  inner_join(n_trains_per_day) %>%
+  mutate(avg_delays_per_train = n_delays/n_trains)
 ```
 
-In this time there were on average 5508.3344768 delays per day and mean
-of all .
+    ## Joining with `by = join_by(day)`
+
+In this time there were on average .
 
 ``` r
 delays %>% group_by(date=month(timestamp)) %>% summarise(n()) %>% plot()

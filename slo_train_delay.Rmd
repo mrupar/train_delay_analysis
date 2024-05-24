@@ -12,13 +12,16 @@ library(tidyverse)
 library(leaflet)
 library(sp)
 library(igraph)
+library(esquisse)
+library(rjson)
 ```
-
 ## Data import
 Data import and preprocessing. 
 
+
 Data accessible on https://www.kaggle.com/datasets/gregorkrz/szdelays
-```{r,message=FALSE}
+
+```{r,message=FALSE, results='hide'}
 delays <- read_csv(unzip("train_delay.zip", "delays.csv"))
 rail_edge <- read_csv(unzip("train_delay.zip", "rail_edgelist.csv"), col_names = FALSE)
 rail_node <- read_csv(unzip("train_delay.zip", "rail_nodes.csv"))
@@ -27,13 +30,49 @@ rail_node <- read_csv(unzip("train_delay.zip", "rail_nodes.csv"))
 rail_node$id <- as.character(rail_node$id)
 rail_edge$X1 <- as.character(rail_edge$X1)
 rail_edge$X2 <- as.character(rail_edge$X2)
+delays$station_id <- as.character(delays$station_id)
 
 # add 0 at begining for 4 letter edges to match the rest
 rail_edge$X1[nchar(rail_edge$X1)==4] <- rail_edge$X1[nchar(rail_edge$X1)==4] %>% paste0("0",.)
 rail_edge$X2[nchar(rail_edge$X2)==4] <- rail_edge$X2[nchar(rail_edge$X2)==4] %>% paste0("0",.)
+
+# convert unix timestamp to datetime and add day column
+delays$timestamp <- delays$timestamp %>% as_datetime()
+delays <- delays %>% mutate(day=as.Date(timestamp))
+
+# all dates in interval
+all_days <- as.data.frame(seq.Date(date(min(delays$timestamp)),date(max(delays$timestamp)), by= "days"))
+colnames(all_days) <- c("day")
+missing_dates <- all_days %>% anti_join(delays)
+all_missing_days <- as.data.frame(seq.Date(date(min(missing_dates$day)),date(max(missing_dates$day)), by= "days"))
+colnames(all_missing_days) <- c("day")
+# all missing dates are present in one interval
+all(missing_dates == all_missing_days) # TRUE
 ```
 
-## Network visualization
+## Representation of data
+Data is obtained at time intervals from `r date(min(delays$timestamp))` to `r date(max(delays$timestamp))`. 
+There is a 57 day gap in data in interval `r date(min(all_missing_days$day))` to `r date(max(all_missing_days$day))`, most likely due to corona virus pandemic.
+```{r}
+train_delay_per_day <- delays %>% 
+  group_by(date=date(timestamp), train = train_no) %>% 
+  summarise(n_train_delays = n(), .groups = 'drop')
+
+train_delay_per_day <- train_delay_per_day %>%
+  group_by(date) %>% summarise(delays = sum(n_train_delays)) %>%
+  inner_join(train_delay_per_day) %>%
+  mutate(perc = n_train_delays/delays)
+```
+
+In this time there were on average `r mean(delays_per_day$n)` .
+
+```{r}
+delays %>% group_by(date=month(timestamp)) %>% summarise(n()) %>% plot()
+```
+
+
+
+### Network visualization
 Visualization of network on map of Slovenia
 ```{r,warning=FALSE}
 # make graph from dataframe and back to get desired dataframe format
@@ -71,6 +110,7 @@ leaflet(vert) %>% addTiles() %>%
     color = "red",
     weight = 2)
 ```
+
 
 
 

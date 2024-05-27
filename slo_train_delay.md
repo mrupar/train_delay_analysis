@@ -2,8 +2,17 @@ Slovenske železnice train delay
 ================
 
 - [Data import](#data-import)
+- [Network visualization](#network-visualization)
 - [Representation of data](#representation-of-data)
-  - [Network visualization](#network-visualization)
+  - [Basic statisctics](#basic-statisctics)
+- [TODO](#todo)
+  - [Distribution of Delays](#distribution-of-delays)
+  - [Delay by Train Type](#delay-by-train-type)
+  - [Trend Analysis](#trend-analysis)
+  - [Heatmap of Delays by Hour and Day of
+    Week](#heatmap-of-delays-by-hour-and-day-of-week)
+  - [Predictive Analysis](#predictive-analysis)
+  - [Outlier Detection](#outlier-detection)
 
 ## Data import
 
@@ -40,41 +49,7 @@ colnames(all_missing_days) <- c("day")
 all(missing_dates == all_missing_days) # TRUE
 ```
 
-## Representation of data
-
-Data is obtained at time intervals from 2020-01-23 to 2021-10-23. There
-is a 57 day gap in data in interval 2020-03-16 to 2020-05-11, most
-likely due to corona virus pandemic.
-
-``` r
-# number of delays per day
-n_delays_per_day <- delays %>% 
-  group_by(day) %>% 
-  summarise(n_delays = n())
-
-# number of trains on each day
-n_trains_per_day <- delays %>% 
-  group_by(day) %>% 
-  distinct(train_no) %>% 
-  summarise(n_trains = n())
-
-# average number of delays for each day
-avg_delay_per_day <- n_delays_per_day %>%
-  inner_join(n_trains_per_day) %>%
-  mutate(avg_delays_per_train = n_delays/n_trains)
-```
-
-    ## Joining with `by = join_by(day)`
-
-In this time there were on average .
-
-``` r
-delays %>% group_by(date=month(timestamp)) %>% summarise(n()) %>% plot()
-```
-
-![](slo_train_delay_files/figure-gfm/unnamed-chunk-3-1.png)<!-- -->
-
-### Network visualization
+## Network visualization
 
 Visualization of network on map of Slovenia
 
@@ -115,4 +90,55 @@ leaflet(vert) %>% addTiles() %>%
     weight = 2)
 ```
 
-![](slo_train_delay_files/figure-gfm/unnamed-chunk-4-1.png)<!-- -->
+![](slo_train_delay_files/figure-gfm/unnamed-chunk-2-1.png)<!-- -->
+
+## Representation of data
+
+Data is obtained at time intervals from 2020-01-23 to 2021-10-23. There
+is a 57 day gap in data in interval 2020-03-16 to 2020-05-11, most
+likely due to corona virus pandemic.
+
+### Basic statisctics
+
+Basic statistics for all trains.
+
+``` r
+delays$delay %>% summary()
+```
+
+    ##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+    ##    0.00    6.00   10.00   15.69   17.00  999.00
+
+Since I still have hope for Slovenian railroads lets filter out all rows
+with 16.65 hour or 999 minute delay from our data set and hope that
+those 2427 rows were mistake.
+
+``` r
+delays <- delays %>%
+  filter(delay!=999)
+
+delays$delay %>% summary()
+```
+
+    ##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+    ##    0.00    6.00   10.00   14.95   17.00  446.00
+
+# TODO
+
+### Distribution of Delays
+
+``` r
+delays %>% group_by(date=month(timestamp)) %>% summarise(n()) %>% plot()
+```
+
+![](slo_train_delay_files/figure-gfm/unnamed-chunk-5-1.png)<!-- -->
+
+### Delay by Train Type
+
+### Trend Analysis
+
+### Heatmap of Delays by Hour and Day of Week
+
+### Predictive Analysis
+
+### Outlier Detection

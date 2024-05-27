@@ -12,8 +12,6 @@ library(tidyverse)
 library(leaflet)
 library(sp)
 library(igraph)
-library(esquisse)
-library(rjson)
 ```
 ## Data import
 Data import and preprocessing. 
@@ -50,36 +48,7 @@ colnames(all_missing_days) <- c("day")
 all(missing_dates == all_missing_days) # TRUE
 ```
 
-## Representation of data
-Data is obtained at time intervals from `r date(min(delays$timestamp))` to `r date(max(delays$timestamp))`. 
-There is a 57 day gap in data in interval `r date(min(all_missing_days$day))` to `r date(max(all_missing_days$day))`, most likely due to corona virus pandemic.
-```{r}
-# number of delays per day
-n_delays_per_day <- delays %>% 
-  group_by(day) %>% 
-  summarise(n_delays = n())
-
-# number of trains on each day
-n_trains_per_day <- delays %>% 
-  group_by(day) %>% 
-  distinct(train_no) %>% 
-  summarise(n_trains = n())
-
-# average number of delays for each day
-avg_delay_per_day <- n_delays_per_day %>%
-  inner_join(n_trains_per_day) %>%
-  mutate(avg_delays_per_train = n_delays/n_trains)
-```
-
-In this time there were on average .
-
-```{r}
-delays %>% group_by(date=month(timestamp)) %>% summarise(n()) %>% plot()
-```
-
-
-
-### Network visualization
+## Network visualization
 Visualization of network on map of Slovenia
 ```{r,warning=FALSE}
 # make graph from dataframe and back to get desired dataframe format
@@ -117,6 +86,52 @@ leaflet(vert) %>% addTiles() %>%
     color = "red",
     weight = 2)
 ```
+
+
+## Representation of data
+Data is obtained at time intervals from `r date(min(delays$timestamp))` to `r date(max(delays$timestamp))`. 
+There is a 57 day gap in data in interval `r date(min(all_missing_days$day))` to `r date(max(all_missing_days$day))`, most likely due to corona virus pandemic.
+
+### Basic statisctics
+Basic statistics for all trains.
+```{r}
+delays$delay %>% summary()
+```
+
+Since I still have hope for Slovenian railroads lets filter out all rows with `r 999/60` hour or 999 minute delay from our data set and hope that those `r nrow(delays[delays$delay == 999, ])` rows were mistake.
+```{r}
+delays <- delays %>%
+  filter(delay!=999)
+
+delays$delay %>% summary()
+```
+# TODO
+
+### Distribution of Delays
+```{r}
+delays %>% group_by(date=month(timestamp)) %>% summarise(n()) %>% plot()
+```
+
+
+### Delay by Train Type
+
+
+
+
+### Trend Analysis
+
+
+
+### Heatmap of Delays by Hour and Day of Week
+
+
+
+### Predictive Analysis
+
+
+
+### Outlier Detection
+
 
 
 

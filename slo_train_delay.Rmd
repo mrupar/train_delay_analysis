@@ -98,18 +98,36 @@ Basic statistics for all trains.
 delays$delay %>% summary()
 ```
 
-Since I still have hope for Slovenian railroads lets filter out all rows with `r 999/60` hour or 999 minute delay from our data set and hope that those `r nrow(delays[delays$delay == 999, ])` rows were mistake.
+Since I still have hope for Slovenian railroads lets filter out all rows with `r 999/60` hour (999 minute) delay from our data set and hope that those `r nrow(delays[delays$delay == 999, ])` rows were mistake.
 ```{r}
-delays <- delays %>%
+filtered <- delays %>%
   filter(delay!=999)
 
-delays$delay %>% summary()
+filtered$delay %>% summary()
 ```
+
+Next let's determine the percentile of train that arrieved to station with delay.
+```{r}
+filtered[filtered$delay > 0,] %>% nrow() %>% {./nrow(filtered)}
+```
+Again I hope this is error in data set and trains are not late in `r paste0(filtered[filtered$delay > 0,] %>% nrow() %>% {./nrow(filtered)},"%")` of time. So let's filter out rows without delay and continue with this data.
+```{r}
+filtered <- filtered %>%
+  filter(delay!=0)
+
+filtered$delay %>% summary()
+```
+
+
 # TODO
 
 ### Distribution of Delays
 ```{r}
-delays %>% group_by(date=month(timestamp)) %>% summarise(n()) %>% plot()
+delays %>% group_by(day) %>% summarise(n()) %>% plot(type="S")
+delays %>% group_by(month=month(timestamp)) %>% summarise(n()) %>% plot()
+delays %>% group_by(day=day(timestamp)) %>% summarise(n()) %>% plot()
+delays %>% group_by(wday=wday(timestamp,label=T, week_start = 1)) %>% summarise(n()) %>% plot()
+delays %>% group_by(hour=hour(timestamp)) %>% summarise(n()) %>% plot()
 ```
 
 
@@ -123,6 +141,7 @@ delays %>% group_by(date=month(timestamp)) %>% summarise(n()) %>% plot()
 
 
 ### Heatmap of Delays by Hour and Day of Week
+
 
 
 

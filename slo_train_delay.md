@@ -110,28 +110,75 @@ delays$delay %>% summary()
     ##    0.00    6.00   10.00   15.69   17.00  999.00
 
 Since I still have hope for Slovenian railroads lets filter out all rows
-with 16.65 hour or 999 minute delay from our data set and hope that
-those 2427 rows were mistake.
+with 16.65 hour (999 minute) delay from our data set and hope that those
+2427 rows were mistake.
 
 ``` r
-delays <- delays %>%
+filtered <- delays %>%
   filter(delay!=999)
 
-delays$delay %>% summary()
+filtered$delay %>% summary()
 ```
 
     ##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
     ##    0.00    6.00   10.00   14.95   17.00  446.00
+
+Next let’s determine the percentile of train that arrieved to station
+with delay.
+
+``` r
+filtered[filtered$delay > 0,] %>% nrow() %>% {./nrow(filtered)}
+```
+
+    ## [1] 0.9964833
+
+Again I hope this is error in data set and trains are not late in
+0.996483253618338% of time. So let’s filter out rows without delay and
+continue with this data.
+
+``` r
+filtered <- filtered %>%
+  filter(delay!=0)
+
+filtered$delay %>% summary()
+```
+
+    ##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+    ##       1       6      10      15      17     446
 
 # TODO
 
 ### Distribution of Delays
 
 ``` r
-delays %>% group_by(date=month(timestamp)) %>% summarise(n()) %>% plot()
+delays %>% group_by(day) %>% summarise(n()) %>% plot(type="S")
 ```
 
-![](slo_train_delay_files/figure-gfm/unnamed-chunk-5-1.png)<!-- -->
+![](slo_train_delay_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
+
+``` r
+delays %>% group_by(month=month(timestamp)) %>% summarise(n()) %>% plot()
+```
+
+![](slo_train_delay_files/figure-gfm/unnamed-chunk-7-2.png)<!-- -->
+
+``` r
+delays %>% group_by(day=day(timestamp)) %>% summarise(n()) %>% plot()
+```
+
+![](slo_train_delay_files/figure-gfm/unnamed-chunk-7-3.png)<!-- -->
+
+``` r
+delays %>% group_by(wday=wday(timestamp,label=T, week_start = 1)) %>% summarise(n()) %>% plot()
+```
+
+![](slo_train_delay_files/figure-gfm/unnamed-chunk-7-4.png)<!-- -->
+
+``` r
+delays %>% group_by(hour=hour(timestamp)) %>% summarise(n()) %>% plot()
+```
+
+![](slo_train_delay_files/figure-gfm/unnamed-chunk-7-5.png)<!-- -->
 
 ### Delay by Train Type
 

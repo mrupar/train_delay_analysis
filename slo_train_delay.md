@@ -7,7 +7,6 @@ Slovenske železnice train delay
   - [Basic statisctics](#basic-statisctics)
 - [TODO](#todo)
   - [Distribution of Delays](#distribution-of-delays)
-  - [Delay by Train Type](#delay-by-train-type)
   - [Trend Analysis](#trend-analysis)
   - [Heatmap of Delays by Hour and Day of
     Week](#heatmap-of-delays-by-hour-and-day-of-week)
@@ -151,36 +150,81 @@ filtered$delay %>% summary()
 ### Distribution of Delays
 
 ``` r
-delays %>% group_by(day) %>% summarise(n()) %>% plot(type="S")
+time_delays <- delays %>% 
+  group_by(day) %>%
+  summarise(count=n())
+
+time_delays %>% ggplot(aes(x=day,y=count)) +
+  geom_col()+
+  geom_smooth(formula = y ~ x) 
 ```
+
+    ## `geom_smooth()` using method = 'loess'
 
 ![](slo_train_delay_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
 
 ``` r
-delays %>% group_by(month=month(timestamp)) %>% summarise(n()) %>% plot()
+month_delay <- delays %>%
+  group_by(month=month(timestamp)) %>%
+  summarise(count=n())
+
+month_delay %>% ggplot(aes(x=month,y=count)) +
+  geom_point()
 ```
 
-![](slo_train_delay_files/figure-gfm/unnamed-chunk-7-2.png)<!-- -->
+![](slo_train_delay_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
 
 ``` r
-delays %>% group_by(day=day(timestamp)) %>% summarise(n()) %>% plot()
+day_delay <- delays %>%
+  group_by(day=day(timestamp)) %>%
+  summarise(count = n())
+
+mean_y <- mean(day_delay$count)
+sd_y <- sd(day_delay$count)
+
+
+day_delay %>% ggplot(aes(x=day,y=count)) +
+  geom_point() + 
+  geom_hline(yintercept = mean_y, color = "red", linetype = "dashed") +
+  annotate("text", x = min(day_delay$day), y = mean_y-1500, 
+           label = paste("Mean Y =", round(mean_y, 2)), color = "red", hjust = -0.5) +
+  geom_hline(yintercept = mean_y + sd_y, color = "red") +
+  geom_hline(yintercept = mean_y - sd_y, color = "red")
 ```
 
-![](slo_train_delay_files/figure-gfm/unnamed-chunk-7-3.png)<!-- -->
+![](slo_train_delay_files/figure-gfm/unnamed-chunk-9-1.png)<!-- -->
 
 ``` r
-delays %>% group_by(wday=wday(timestamp,label=T, week_start = 1)) %>% summarise(n()) %>% plot()
+wday_delay <- delays %>% 
+  group_by(wday=wday(timestamp,label=T, week_start = 1)) %>%
+  summarise(count=n())
+
+wday_delay %>% ggplot(aes(x=wday,y=count)) +
+  geom_bar(stat = "identity", fill = "skyblue")
 ```
 
-![](slo_train_delay_files/figure-gfm/unnamed-chunk-7-4.png)<!-- -->
+![](slo_train_delay_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
 
 ``` r
-delays %>% group_by(hour=hour(timestamp)) %>% summarise(n()) %>% plot()
+hour_delays <- delays %>% 
+  group_by(hour=hour(timestamp)) %>% 
+  summarise(count=n())
+
+mean_y <- mean(hour_delays$count)
+mean_x <- mean(hour_delays$hour)
+sd_x <- sd(hour_delays$hour)
+
+hour_delays %>% ggplot(aes(x=hour,y=count)) +
+  geom_point() + 
+  geom_hline(yintercept = mean_y, color = "red", linetype = "dashed") +
+  annotate("text", x = min(hour_delays$hour), y = mean_y-8000, 
+           label = paste("Mean Y =", round(mean_y, 2)), color = "red", hjust = -0.5) +
+  geom_vline(xintercept = mean_x - sd_x, color = "blue") +
+  annotate("text", x = mean_x, y = 0, label = paste("Standard deviation"), color = "blue") +
+  geom_vline(xintercept = mean_x + sd_x, color = "blue")
 ```
 
-![](slo_train_delay_files/figure-gfm/unnamed-chunk-7-5.png)<!-- -->
-
-### Delay by Train Type
+![](slo_train_delay_files/figure-gfm/unnamed-chunk-11-1.png)<!-- -->
 
 ### Trend Analysis
 

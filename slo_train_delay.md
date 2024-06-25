@@ -5,11 +5,8 @@ Slovenske železnice train delay
 - [Network visualization](#network-visualization)
 - [Representation of data](#representation-of-data)
   - [Basic statisctics](#basic-statisctics)
-- [TODO](#todo)
   - [Distribution of Delays](#distribution-of-delays)
-  - [Trend Analysis](#trend-analysis)
-  - [Heatmap of Delays by Hour and Day of
-    Week](#heatmap-of-delays-by-hour-and-day-of-week)
+- [TODO](#todo)
   - [Predictive Analysis](#predictive-analysis)
   - [Outlier Detection](#outlier-detection)
 
@@ -145,9 +142,9 @@ filtered$delay %>% summary()
     ##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
     ##       1       6      10      15      17     446
 
-# TODO
-
 ### Distribution of Delays
+
+#### Distribution by time
 
 ``` r
 time_delays <- delays %>% 
@@ -163,6 +160,8 @@ time_delays %>% ggplot(aes(x=day,y=count)) +
 
 ![](slo_train_delay_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
 
+#### Distribution by month
+
 ``` r
 month_delay <- delays %>%
   group_by(month=month(timestamp)) %>%
@@ -173,6 +172,8 @@ month_delay %>% ggplot(aes(x=month,y=count)) +
 ```
 
 ![](slo_train_delay_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
+
+#### Distribution by day
 
 ``` r
 day_delay <- delays %>%
@@ -194,6 +195,8 @@ day_delay %>% ggplot(aes(x=day,y=count)) +
 
 ![](slo_train_delay_files/figure-gfm/unnamed-chunk-9-1.png)<!-- -->
 
+#### Distribution by week day
+
 ``` r
 wday_delay <- delays %>% 
   group_by(wday=wday(timestamp,label=T, week_start = 1)) %>%
@@ -204,6 +207,8 @@ wday_delay %>% ggplot(aes(x=wday,y=count)) +
 ```
 
 ![](slo_train_delay_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
+
+#### Distribution by hour
 
 ``` r
 hour_delays <- delays %>% 
@@ -226,9 +231,7 @@ hour_delays %>% ggplot(aes(x=hour,y=count)) +
 
 ![](slo_train_delay_files/figure-gfm/unnamed-chunk-11-1.png)<!-- -->
 
-### Trend Analysis
-
-### Heatmap of Delays by Hour and Day of Week
+# TODO
 
 ### Predictive Analysis
 

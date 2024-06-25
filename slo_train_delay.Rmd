@@ -119,9 +119,9 @@ filtered$delay %>% summary()
 ```
 
 
-# TODO
 
 ### Distribution of Delays
+#### Distribution by time
 ```{r}
 time_delays <- delays %>% 
   group_by(day) %>%
@@ -132,7 +132,7 @@ time_delays %>% ggplot(aes(x=day,y=count)) +
   geom_smooth(formula = y ~ x) 
 ```
 
-
+#### Distribution by month
 ```{r}
 month_delay <- delays %>%
   group_by(month=month(timestamp)) %>%
@@ -142,7 +142,7 @@ month_delay %>% ggplot(aes(x=month,y=count)) +
   geom_point()
 ```
 
-
+#### Distribution by day
 ```{r}
 day_delay <- delays %>%
   group_by(day=day(timestamp)) %>%
@@ -162,8 +162,7 @@ day_delay %>% ggplot(aes(x=day,y=count)) +
 
 ```
 
-
-
+#### Distribution by week day
 ```{r}
 wday_delay <- delays %>% 
   group_by(wday=wday(timestamp,label=T, week_start = 1)) %>%
@@ -174,7 +173,7 @@ wday_delay %>% ggplot(aes(x=wday,y=count)) +
 ```
 
 
-
+#### Distribution by hour
 ```{r}
 hour_delays <- delays %>% 
   group_by(hour=hour(timestamp)) %>% 
@@ -196,18 +195,11 @@ hour_delays %>% ggplot(aes(x=hour,y=count)) +
 
 
 
-
-
-### Trend Analysis
-
-
-
-### Heatmap of Delays by Hour and Day of Week
-
-
+# TODO
 
 
 ### Predictive Analysis
+
 
 
 
